@@ -41,6 +41,9 @@ pro read_bas2000, file, settings, data
 ;       MLR 20-AUG-1998 Changed to use SWAP_IF_LITTLE_ENDIAN on BYTEORDER.
 ;       MLR 26-APR-1999 Added documentation header
 ;       MLR 21-JUL-1999 Fixed bug, replace CLOSE, lun with FREE_LUN, lun
+;       MLR 08-NOV-2001 Changes to allow reading BAS2500.  Used unsigned int
+;                       for 16 bit data, BAS2500 does not have #saturated pixels
+;                       in .inf file.
 ;-
 
 settings = {header:         "", $
@@ -56,6 +59,7 @@ settings = {header:         "", $
             n_cols:         0L, $
             sensitivity:    0L, $
             latitude:       0L, $
+            ipr:            "", $
             n_sat:          0L  $
 }
 
@@ -88,10 +92,18 @@ settings.date_string=t
 t = 0.
 readf, lun, t             ; Read date numbers
 settings.date=t
-readf, lun, t             ; Read number of saturated pixels
-settings.n_sat=t
+; The file format from here on is different for BAS2500 and BAS2000
+line1=""
+line2=""
+readf, lun, line1
+readf, lun, line2
+if (line2 eq "IPR2500") then begin
+   settings.ipr = "IPR2500"
+endif else begin
+   settings.ipr = "BAS2000"
+   settings.n_sat = float(line1) ; Number of saturated pixels
+endelse
 t=""
-readf, lun, t             ; Skip blank line
 readf, lun, t             ; Comment field
 settings.comment=t
 free_lun, lun
@@ -99,7 +111,7 @@ free_lun, lun
 if settings.bits eq 8 then $
         data = bytarr(settings.n_cols, settings.n_rows, /nozero) $
    else $
-        data = intarr(settings.n_cols, settings.n_rows, /nozero)
+        data = uintarr(settings.n_cols, settings.n_rows, /nozero)
 if !version.os eq "vms" then $
   openr, lun, file+'.img', /get_lun, /block $
 else $
