@@ -1,0 +1,2 @@
+This demonstration IDL program shows the ease of creating
+GUI applications for data analysis and display.
