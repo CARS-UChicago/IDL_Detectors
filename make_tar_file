@@ -1,1 +1,1 @@
-tar cvf /home/epics/public_html/pub/idl_detector.tar read_bas2000.pro write_bas2000.pro bas2000_response.pro read_siemens.pro read_photometrics.pro read_wdx.pro read_princeton.pro
+tar cvf /home/epics/public_html/pub/idl_detector.tar read_bas2000.pro write_bas2000.pro bas2000_response.pro read_pxl.pro read_siemens.pro read_photometrics.pro read_wdx.pro convert_princeton_header.pro princeton_header__define.pro read_princeton.pro
