@@ -4,6 +4,8 @@ pro read_princeton, file, $
                 x_calibration=x_calibration, $
                 y_calibration=y_calibration, $
                 comments=comments, $
+                exposure=exposure, $
+                background_file = background_file, $
                 date=date
 ;+
 ; NAME:
@@ -50,6 +52,10 @@ pro read_princeton, file, $
 ;       and rotation angle.
 ;   DATE:
 ;       A date string of the form DDMMMYYYY:HH:MM:SS
+;   EXPOSURE:
+;       The exposure time in seconds.
+;   BACKGROUND_FILE:
+;       The name of the background file that was subtracted from the data
 ;
 ; RESTRICTIONS:
 ;   This procedure currently only extracts limited information from the
@@ -74,6 +80,8 @@ pro read_princeton, file, $
 ;   Mark Rivers 3/27/99   Added "Comments" keyword
 ;   Mark Rivers 3/29/99   Added "Date" keyword
 ;   Mark Rivers 2/22/00   Corrected byte order for data and calibration.
+;   Mark Rivers 9/11/01   Added "exposure" keyword
+;   Mark Rivers 9/12/01   Added "background_file" keyword
 ;-
 
 openr, lun, /get, file, /block
@@ -81,103 +89,51 @@ openr, lun, /get, file, /block
 header = bytarr(4100)
 readu, lun, header
 
-; Get the image size from the header
+; Convert the header from a byte array to a structure
+header = convert_princeton_header(header)
 
-nx = fix(header, 42)
-byteorder, nx, /sswap, /swap_if_big_endian
-ny = fix(header, 656)
-byteorder, ny, /sswap, /swap_if_big_endian
-nframes = long(header, 1446)
-byteorder, nframes, /lswap, /swap_if_big_endian
-data_type = fix(header, 108)
-byteorder, data_type, /sswap, /swap_if_big_endian
+; Get the image size from the header
+nx = header.xdim
+ny = header.ydim
+nframes = header.NumFrames
+data_type = header.datatype
 case data_type of
         0: data = fltarr(nx, ny, nframes)
         1: data = lonarr(nx, ny, nframes)
-        2: data = lonarr(nx, ny, nframes)
-        3: data = intarr(nx, ny, nframes)
+        2: data = intarr(nx, ny, nframes)
+        3: data = uintarr(nx, ny, nframes)
         else: message, 'Unknown data type'
 endcase
 
-offset = 3000
-xcal = { $
-        offset:         double(header, offset), $
-        factor:         double(header, offset+8), $
-        current_unit:   byte(header, offset+16), $
-        reserved1:      byte(header, offset+17), $
-        string1:        byte(header, offset+18, 40), $
-        reserved2:      byte(header, offset+58, 40), $
-    calib_valid:    byte(header, offset+98), $
-    input_unit:     byte(header, offset+99), $
-    polynom_unit:   byte(header, offset+100), $
-    polynom_order:  byte(header, offset+101), $
-    calib_count:    byte(header, offset+102), $
-    pixel_pos:      double(header, offset+103, 10), $
-    calib_value:    double(header, offset+183, 10), $
-    polynom_coeff:  double(header, offset+263, 6), $
-    laser_position: double(header, offset+311), $
-    reserved3:      byte(header, offset+319), $
-    new_calib_flag: byte(header, offset+320), $
-    calib_label:    byte(header, offset+321, 81), $
-    expansion:      byte(header, offset+402, 87) $
-}
+xcal = header.xcalibration
+ycal = header.ycalibration
+x_calibration = poly(findgen(nx), xcal.polynocoeff(0:xcal.polynoorder))
+y_calibration = poly(findgen(ny), ycal.polynocoeff(0:ycal.polynoorder))
 
-offset = 3489
-ycal = { $
-    offset:         double(header, offset), $
-    factor:         double(header, offset+8), $
-    current_unit:   byte(header, offset+16), $
-    reserved1:      byte(header, offset+17), $
-    string1:        byte(header, offset+18, 40), $
-    reserved2:      byte(header, offset+58, 40), $
-    calib_valid:    byte(header, offset+98), $
-    input_unit:     byte(header, offset+99), $
-    polynom_unit:   byte(header, offset+100), $
-    polynom_order:  byte(header, offset+101), $
-    calib_count:    byte(header, offset+102), $
-    pixel_pos:      double(header, offset+103, 10), $
-    calib_value:    double(header, offset+183, 10), $
-    polynom_coeff:  double(header, offset+263, 6), $
-    laser_position: double(header, offset+311), $
-    reserved3:      byte(header, offset+319), $
-    new_calib_flag: byte(header, offset+320), $
-    calib_label:    byte(header, offset+321, 81), $
-    expansion:      byte(header, offset+402, 87) $
-}
-temp = xcal.polynom_coeff
-byteorder, temp, /l64swap, /swap_if_big_endian
-xcal.polynom_coeff = temp
-temp = ycal.polynom_coeff
-byteorder, temp, /l64swap, /swap_if_big_endian
-ycal.polynom_coeff = temp
-
-x_calibration = poly(findgen(nx), xcal.polynom_coeff(0:xcal.polynom_order))
-y_calibration = poly(findgen(ny), ycal.polynom_coeff(0:ycal.polynom_order))
-
-comments=byte(header, 200, 80, 5)
+comments=header.comments
 comments=string(comments)
-date = byte(header, 20, 10)
-date = string(date)
-hour = fix(header, 30)
-byteorder, hour, /sswap, /swap_if_big_endian
-minute = fix(header, 32)
-byteorder, minute, /sswap, /swap_if_big_endian
-second = fix(header, 38)
-byteorder, second, /sswap, /swap_if_big_endian
-date = date + ":" + string(hour, format='(i2.2)') $
-            + ":" + string(minute, format='(i2.2)') $
-            + ":" + string(second, format='(i2.2)')
+date = header.date
+;hour = fix(header, 30)
+;byteorder, hour, /sswap, /swap_if_big_endian
+;minute = fix(header, 32)
+;byteorder, minute, /sswap, /swap_if_big_endian
+;second = fix(header, 38)
+;byteorder, second, /sswap, /swap_if_big_endian
+;date = date + ":" + string(hour, format='(i2.2)') $
+;            + ":" + string(minute, format='(i2.2)') $
+;            + ":" + string(second, format='(i2.2)')
+exposure = header.exp_sec
+if (header.BackGrndApplied) then background_file = header.background $
+else background_file = ""
 
 readu, lun, data
 data = reform(data)  ; Eliminate trailing dimensions if 1
 case data_type of
-        0: byteorder, data, /fswap, /swap_if_big_endian
+        0: byteorder, data, /lswap, /swap_if_big_endian
         1: byteorder, data, /lswap, /swap_if_big_endian
-        2: byteorder, data, /lswap, /swap_if_big_endian
+        2: byteorder, data, /sswap, /swap_if_big_endian
         3: byteorder, data, /sswap, /swap_if_big_endian
         else: message, 'Unknown data type'
 endcase
-if (data_type eq 3) and (min(data) lt 0) then $
-    data = long(data) and 'ffff'x  ; IDL does not have unsigned int yet
 free_lun, lun
 end
