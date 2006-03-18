@@ -119,12 +119,15 @@ pro read_mar345, file, data, header
 ; OPERATION:
 ;   This routine uses IDL to read the header information and the table i
 ;   of high pixel values (if present).
+;
 ;   It can also use IDL to read and decompress the data, but this is quite slow,
 ;   about 90 seconds for a 3450x3450 image.  
+;
 ;   To improve performance there is a C code function provided that can read the files
 ;   and decompress them much faster.  The source code (mar345_IDL.c) and Makefile for Linux and Unix is
 ;   provided in this directory.  The required support files, mar3xx_pck.c and mar3xx_pck.h are
 ;   also provided.
+;
 ;   At run time this IDL routine will see if there is an environment variable
 ;   called MAR345_IDL.  If it exists, it is assumed to be the complete path specification
 ;   to a shareable library that contains the function mar345_IDL.  read_mar345.pro will call
