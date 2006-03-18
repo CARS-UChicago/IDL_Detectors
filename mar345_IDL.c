@@ -17,20 +17,15 @@ EXPORT void mar345_IDL(int argc, char *argv[])
 {
         char *filename =  (char *)argv[0];
         INT16 *data    = (INT16 *)argv[1];
-        FILE *input, *debug;
+        FILE *input;
 
-        input = fopen(filename, "r");
-        debug = fopen("mar345_debug.out", "w");
+        input = fopen(filename, "rb");
         if (input == NULL) {
-           fprintf(debug, "Error opening input file %s\n", filename);
-           goto done;
+           printf("Error opening input file %s\n", filename);
+           return;
         }
 	get_pck(input, data);
-        fprintf(debug, "Read from file %s\n", filename);
-        fprintf(debug, " data=%p, data[1000000]=%d\n", data, data[1000000]);
-        done:
         fclose(input);
-        fclose(debug);
 	return;
 }
 
