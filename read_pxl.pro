@@ -5,7 +5,7 @@ pro read_pxl, file, header, data
 ;   READ_PXL
 ;
 ; PURPOSE:
-;   This procedures reads a Photometrics PXL image proicessing format file
+;   This procedures reads a Photometrics PXL image processing format file
 ;
 ; CATEGORY:
 ;   Detectors.
