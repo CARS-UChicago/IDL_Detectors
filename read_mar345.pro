@@ -102,36 +102,43 @@ pro read_mar345, file, data, header
 ;   READ_MAR345, File, Data, Header
 ;
 ; INPUTS:
-;   File:  
+;   File:
 ;       The name of the MAR345 input file.
 ;
 ; OUTPUTS:
-;   Data:  
+;   Data:
 ;       The 2-D array of intensities.  This is a 16-bit UINT array if the data
 ;       does not contain any high pixels (>65535) , and LONG if the data does contain
 ;       any high pixels.
 ;
-;   Header:  
+;   Header:
 ;       A structure which contains the header information.
 ;       The names of the fields in this structure are meant to be
 ;       self-explanatory.
 ;
 ; OPERATION:
-;   This routine uses IDL to read the header information and the table i
+;   This routine uses IDL to read the header information and the table
 ;   of high pixel values (if present).
 ;
 ;   It can also use IDL to read and decompress the data, but this is quite slow,
-;   about 90 seconds for a 3450x3450 image.  
+;   about 90 seconds for a 3450x3450 image.
 ;
 ;   To improve performance there is a C code function provided that can read the files
-;   and decompress them much faster.  The source code (mar345_IDL.c) and Makefile for Linux and Unix is
-;   provided in this directory.  The required support files, mar3xx_pck.c and mar3xx_pck.h are
-;   also provided.
+;   and decompress them much faster, about 2 seconds for a 3450x3450 image.
+;   This C code is built into a shareable object or DLL which is called from IDL.
+;   Prebuilt shareable libraries are provided for Linux (mar345_IDL.so) and
+;   Windows (mar345_IDL.dll). The source code (mar345_IDL.c) and Makefile for Linux and Unix,
+;   and a .bat file to build on Windows are also provided in this directory.
+;   The required support files, mar3xx_pck.c and mar3xx_pck.h are also provided.
 ;
 ;   At run time this IDL routine will see if there is an environment variable
 ;   called MAR345_IDL.  If it exists, it is assumed to be the complete path specification
-;   to a shareable library that contains the function mar345_IDL.  read_mar345.pro will call
-;   that shareable library to read and decompress the file.
+;   to a shareable library. If the environment variable does not exist or does not
+;   point to a valid file, then the routine will search the IDL_PATH for mar345_IDL.dll
+;   (on Windows) or mar345_IDL.so (all other operating systems).  If the shareable
+;   object is found then read_mar345.pro will call that shareable library to read and
+;   decompress the file.  If the shareable object is not found then the built-in IDL
+;   code will be used instead, which is quite slow.
 ;
 ; EXAMPLE:
 ;   READ_MAR345, 'Myfile.mar345', data, header
@@ -140,6 +147,8 @@ pro read_mar345, file, data, header
 ;   Written by:     Mark Rivers, 2006
 ;   Modifications:
 ;-
+
+   common read_mar345_common, mar345_IDL_object
 
    openr, lun, file, /get
    head = lonarr(16)
@@ -159,7 +168,7 @@ pro read_mar345, file, data, header
    header = {mar345, $
              nx:              head[1], $
              ny:              head[1], $
-             nhigh:           head[2], $  
+             nhigh:           head[2], $
              format:          head[3], $
              collection_mode: head[4], $
              npixels:         head[5], $
@@ -194,12 +203,30 @@ pro read_mar345, file, data, header
    endif
    ; We have 2 ways to get the data from the file
    ; 1) Use the shareable library defined by environment variable MAR345_IDL if it exists
+   ;    or searching for the shareable object in IDL_PATH
    ; 2) Use the unpack_words IDL routine above, which is much slower
-   object = getenv("MAR345_IDL")
-   if (object ne "") then begin
-       data = uintarr(header.nx*header.ny, /nozero)
-       temp_file = [byte(file),0B]
-       status = call_external(object, 'mar345_IDL', temp_file, data)
+   if (n_elements(mar345_IDL_object) eq 0) then begin
+      ; See if the environment variable exists and points to a valid file
+      object = getenv("MAR345_IDL")
+      if (object ne "") then begin
+         ; Make sure the file exists
+         f = findfile(object)
+         if (f ne '') then mar345_IDL_object = object
+      endif
+      ; If environment variable did not exist try looking for file directly
+      if (n_elements(mar345_IDL_object) eq 0) then begin
+         if (!os.os_family eq 'Windows') then begin
+            object = file_which('mar345_IDL.dll')
+         endif else begin
+            object = file_which('mar345_IDL.so')
+         endelse
+         if (object ne '') then mar345_IDL_object = object
+      endif
+   endif
+   if (n_elements(mar345_IDL_object) ne 0) then begin
+      data = uintarr(header.nx*header.ny, /nozero)
+      temp_file = [byte(file),0B]
+      status = call_external(mar345_IDL_object, 'mar345_IDL', temp_file, data)
    endif else begin
       ; Figure out how much data to read from file
       fs = fstat(lun)
