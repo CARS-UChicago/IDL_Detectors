@@ -1,23 +1,2 @@
-tar cvf /home/epics/public_html/pub/idl_detector.tar \
-read_bas2000.pro \
-write_bas2000.pro \
-bas2000_response.pro \
-read_pxl.pro \
-read_siemens.pro \
-read_photometrics.pro \
-read_wdx.pro \
-convert_princeton_header.pro \
-princeton_header__define.pro \
-read_princeton.pro \
-read_phantom.pro \
-phantom_header__define.pro \
-read_mar345.pro \
-read_marccd.pro \
-mar3xx_pck.c \
-mar3xx_pck.h \
-types.h \
-mar345_IDL.c \
-Makefile \
-build_mar345_IDL_Windows.bat \
-mar345_IDL.so \
-mar345_IDL.dll
+rm -f *.BAK
+tar cvf /home/epics/public_html/pub/idl_detector.tar * --exclude CVS
