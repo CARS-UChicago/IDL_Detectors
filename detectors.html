@@ -1,0 +1,70 @@
+<!-- Created by Mark Rivers    on 26-APR-1999 -->
+
+<HTML>
+<HEAD>
+<TITLE>GSECARS Detector-Related Software</TITLE>
+</HEAD>
+<BODY>
+<H1>GSECARS Detector-Related Software</H1>
+
+This document describes the GSECARS-developed IDL software used for handling
+x-ray detectors.  These are mainly routines for reading various file formats
+which detector software packages create.
+All of these IDL routines are available in a 
+<A HREF="pub/idl_detector.tar">tar file</A>.
+<P>
+<UL>
+<LI><A HREF="detector_routines.html#READ_BAS2000">read_bas2000.pro</A> 
+is used to read files created by Fuji's BAS2000 software for their 
+image plate reader.
+<LI><A HREF="detector_routines.html#READ_MAR345">read_mar345.pro</A> 
+is used to read compressed files created by the MAR-345 online image plate scanner.
+<LI><A HREF="detector_routines.html#READ_MARCCD">read_marccd.pro</A> 
+is used to read TIFF files created by the MAR-CCD software.
+<LI><A HREF="detector_routines.html#READ_PHANTOM">read_phantom.pro</A> 
+is used to read data files created by the Vision Research Phantom cameras.
+<LI><A HREF="detector_routines.html#READ_PHOTOMETRICS">read_photometrics.pro</A> 
+is used to read .PMIS files created by Photometrics (now Roper Scientific) 
+software for their CCD detectors.
+<LI><A HREF="detector_routines.html#READ_PRINCETON">read_princeton.pro</A> 
+is used to read .SPE files created by Princeton Instruments (now Roper
+Scientific) WinSpec and WinView software for their CCD detectors.
+<LI><A HREF="detector_routines.html#READ_PXL">read_pxl.pro</A> 
+is used to read .PXL files created by Photometrics software.
+<LI><A HREF="detector_routines.html#READ_SIEMENS">read_siemens.pro</A> 
+is used to read files created by Siemens (now Bruker) SMART software for their
+CCD detectors.
+<LI><A HREF="detector_routines.html#READ_WDX">read_wdx.pro</A> 
+is used to read wavelength scan files created by MicroSpec (now Oxford)
+"Qualitative Analysis" program for their WDX wavelength spectrometer.
+<LI><A HREF="detector_routines.html#WINX32_CCD__DEFINE">winx32_ccd_define.pro</A> 
+implements an IDL class library to control Princeton Instruments WinView and WinSpec
+programs through the Microsoft COM interface.
+<LI><A HREF="detector_routines.html#WINX32_DM_CMD__DEFINE">winx32_dm_cmd_define.pro</A> 
+defines a structure for use by the winx32_ccd class.
+<LI><A HREF="detector_routines.html#WINX32_DM_CMD_INIT">winx32_dm_cmd_init.pro</A> 
+initializes the winx32dm_cmd structure for use by the winx32_ccd class.
+<LI><A HREF="detector_routines.html#WINX32_EXP_CMD__DEFINE">winx32_exp_cmd_define.pro</A> 
+defines a structure for use by the winx32_ccd class.
+<LI><A HREF="detector_routines.html#WINX32_EXP_CMD_INIT">winx32_exp_cmd_init.pro</A> 
+initializes the winx32_exp_cmd structure for use by the winx32_ccd class.
+<LI><A HREF="detector_routines.html#WRITE_BAS2000">write_bas2000.pro</A> 
+is used to write files in the format used by Fuji's BAS2000 software for their 
+image plate reader.
+<LI><A HREF="detector_routines.html#WRITE_PRINCETON">write_princeton.pro</A> 
+is used to write .SPE files in the format used by Princeton Instruments (now Roper
+Scientific) WinSpec and WinView software for their CCD detectors.
+
+</UL>
+
+<HR>
+<ADDRESS>
+Suggestions and Comments to: 
+<BR>
+<A HREF="mailto:rivers@cars.uchicago.edu">
+Mark Rivers </A> : (rivers@cars.uchicago.edu)
+<BR>
+Last modified: November 19, 2006
+</ADDRESS>
+</BODY>
+
