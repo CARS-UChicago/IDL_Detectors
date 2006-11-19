@@ -1,5 +1,3 @@
-;dest = '/corvette/home/epics/web_software/idl/'
-dest = '.\'
 mk_html_help, ['read_bas2000.pro', $
                'write_bas2000.pro', $
                'bas2000_response.pro', $
@@ -17,7 +15,6 @@ mk_html_help, ['read_bas2000.pro', $
                'winx32_exp_cmd_init.pro', $
                'winx32_dm_cmd__define.pro', $
                'winx32_dm_cmd_init.pro'], $
-              dest+'detector_routines.html', $
+    'detector_routines.html', $
     title = 'CARS Detector-Related Routines'
-
 end
