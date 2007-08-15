@@ -667,6 +667,10 @@ function winx32_ccd::init
     catch, error
     if (error) then return, 0
 
+    ; The Class ID for the exp_setup class can be found as follows:
+    ; - Run the Microsoft oleview.exe program that comes with Visual Studio.
+    ; - Open Object Classes/All Objects/ExpSetup Class 
+    ; - The CLSID string displayed there is the one that is needed after the $CLSID$ string below.
     self.exp_setup = obj_new('IDLcomIDispatch$CLSID$E715B92B_25F9_11D1_9330_444553540000')
 ;    self.docfile = self.exp_setup->GetDocument()
     self.dm_cmd = winx32_dm_cmd_init()
