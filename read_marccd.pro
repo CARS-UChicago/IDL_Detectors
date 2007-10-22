@@ -1,4 +1,4 @@
-bbpro read_marccd, file, data, header
+pro read_marccd, file, data, header
 
 ;+
 ; NAME:
