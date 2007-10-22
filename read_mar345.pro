@@ -215,7 +215,7 @@ pro read_mar345, file, data, header
       endif
       ; If environment variable did not exist try looking for file directly
       if (n_elements(mar345_IDL_object) eq 0) then begin
-         if (!os.os_family eq 'Windows') then begin
+         if (!version.os_family eq 'Windows') then begin
             object = file_which('mar345_IDL.dll')
          endif else begin
             object = file_which('mar345_IDL.so')
