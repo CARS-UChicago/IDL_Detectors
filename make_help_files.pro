@@ -3,6 +3,7 @@ mk_html_help, ['read_bas2000.pro', $
                'bas2000_response.pro', $
                'read_mar345.pro', $
                'read_marccd.pro', $
+               'read_nd_netcdf.pro', $
                'read_phantom.pro', $
                'read_photometrics.pro', $
                'read_princeton.pro', $
