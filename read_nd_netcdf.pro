@@ -22,7 +22,8 @@ function read_nd_netcdf, file, range=range, uniqueId=uniqueId, timeStamp=timeSta
 ;
 ; KEYWORD INPUTS:
 ;  Range:
-;       The range to read for each dimension.  Specify as a 2D array.  -1 for any dimension means the
+;       The range to read for each dimension.  If this keyword is missing then the entire file is read.
+;       Specify as a 2D array.  -1 for any dimension means the
 ;       full value in the file. Only dimensions up to the last one to be limited need to be included
 ;       in the array, i.e. for a 2-D array range=[[0,10]] is equivalent to range=[[0,10],[-1,-1]]
 ;       Examples:
