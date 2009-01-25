@@ -13,7 +13,7 @@ function read_nd_netcdf, file, range=range, uniqueId=uniqueId, timeStamp=timeSta
 ;   Detectors.
 ;
 ; CALLING SEQUENCE:
-;   Data = READ_ND_NETCDF(File, UniqueId, TimeStamp, DimInfo)
+;   Data = READ_ND_NETCDF(File, Range=Range, UniqueId=UniqueId, TimeStamp=TimeStamp, DimInfo=DimInfo, ArrayInfo=ArrayInfo)
 ;
 ; INPUTS:
 ;   File:
@@ -32,7 +32,7 @@ function read_nd_netcdf, file, range=range, uniqueId=uniqueId, timeStamp=timeSta
 ;
 ; OUTPUTS:
 ;       This function returns the N-Dimensional array of data.  
-;       The dimensions are [numArrays, dim0, dim1, ...]
+;       The dimensions are [dim0, dim1, ..., NumArrays]
 ;
 ; KEYWORD OUTPUTS:
 ;   UniqueId: The uniqueID for each array.  These values can be used to correlate the data with
@@ -56,16 +56,24 @@ function read_nd_netcdf, file, range=range, uniqueId=uniqueId, timeStamp=timeSta
 ;            in January 2009.  File before that were all "Mono".
 ;
 ; EXAMPLE:
-;   IDL> Data = READ_ND_NETCDF('test_A_2.nc', UniqueId=UniqueId, TimeStamp=TimeStamp, DimInfo=DimInfo) 
-;   IDL> help, Data, UniqueId, TimeStamp, DimInfo, ArrayInfo
-;   DATA            BYTE      = Array[640, 480, 200]
-;   UNIQUEID        LONG      = Array[200]
-;   TIMESTAMP       DOUBLE    = Array[200]
-;   DIMINFO         STRUCT    = -> NETCDFDIMINFO Array[2]
+;   IDL> data=read_nd_netcdf('testB_3.nc', uniqueId=uniqueId, timeStamp=timeStamp, dimInfo=dimInfo, arrayInfo=arrayInfo) 
+;   IDL> help, /structure, data, uniqueId, timeStamp, dimInfo, arrayInfo                                                
+;   DATA            BYTE      = Array[3, 1360, 1024, 10]
+;   UNIQUEID        LONG      = Array[10]
+;   TIMESTAMP       DOUBLE    = Array[10]
+;   ** Structure NETCDFDIMINFO, 4 tags, length=16, data length=16:
+;      SIZE            LONG                 3
+;      OFFSET          LONG                 0
+;      BINNING         LONG                 1
+;      REVERSE         LONG                 0
+;   ** Structure NETCDFARRAYINFO, 2 tags, length=24, data length=24:
+;      COLORMODE       STRING    'RGB1'
+;      BAYERPATTERN    STRING    'RGGB'
 ;
 ; MODIFICATION HISTORY:
 ;   Written by:     Mark Rivers, April 17, 2008
 ;   January 25, 2009 Mark Rivers Added arrayInfo support and RANGE keyword to read only a subset of the data
+;                    Changed uniqueId, timeStamp and dimInfo to be keyword rather than positional
 ;-
 
     if (n_elements(file) eq 0) then file=dialog_pickfile(/must_exist)
