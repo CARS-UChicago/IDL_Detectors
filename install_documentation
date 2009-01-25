@@ -1,2 +1,2 @@
-cp -f *.html *.gif *.png /millenia/www/htdocs/software/idl/
+cp -f *.html *.gif *.png /home/epics/web_software/idl/
 
