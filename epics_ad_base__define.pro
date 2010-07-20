@@ -1,4 +1,3 @@
-
 function epics_ad_base::init, prefix
 ;+
 ; NAME:
@@ -7,7 +6,7 @@ function epics_ad_base::init, prefix
 ; PURPOSE:
 ;       This is the initialization code which is invoked when a new object of
 ;       type EPICS_AD_BASE is created.  It cannot be called directly, but only
-;       indirectly by the IDL OBJ_NEW() function. 
+;       indirectly by the IDL OBJ_NEW() function.
 ;
 ; CATEGORY:
 ;       IDL device class library.
@@ -28,7 +27,7 @@ function epics_ad_base::init, prefix
 ;       software installed.  This requires the shareable object ezcaIDL.dll or
 ;       ezcaIDL.so.  The EZCA_IDL_SHARE environment variable must point to this
 ;       shareable object file.  It must be a version of this library built with
-;       EPICS 3.14 to transfer arrays larger than 16,000 bytes. 
+;       EPICS 3.14 to transfer arrays larger than 16,000 bytes.
 ;       The EPICS_CA_MAX_ARRAY_BYTES environment variable must be set to a value
 ;       at least as large as the biggest array that will be used.
 ;
@@ -43,7 +42,7 @@ function epics_ad_base::init, prefix
     status = self->epics_ad_control::init()
     if (status ne 1) then return, status
     self.prefix = prefix
-    
+
     catch, err
     if (err ne 0) then begin
        print, !ERROR_STATE.MSG
@@ -78,11 +77,11 @@ function epics_ad_base::init, prefix
     self->addProperty, 'ReverseY',          'ReverseY'
     self->addProperty, 'ReverseY_RBV',      'ReverseY_RBV'
 
-    self->addProperty, 'ImageSizeX_RBV',    'ImageSizeX_RBV'
-    self->addProperty, 'ImageSizeY_RBV',    'ImageSizeY_RBV'
- 
-    self->addProperty, 'ImageSize_RBV',     'ImageSize_RBV'
- 
+    self->addProperty, 'ArraySizeX_RBV',    'ArraySizeX_RBV'
+    self->addProperty, 'ArraySizeY_RBV',    'ArraySizeY_RBV'
+
+    self->addProperty, 'ArraySize_RBV',     'ArraySize_RBV'
+
     self->addProperty, 'DataType',          'DataType'
     self->addProperty, 'DataType_RBV',      'DataType_RBV'
 
@@ -90,64 +89,64 @@ function epics_ad_base::init, prefix
     self->addProperty, 'FrameType_RBV',     'FrameType_RBV'
 
     self->addProperty, 'ImageMode',         'ImageMode'
-    self->addProperty, 'ImageMode_RBV',             'ImageMode_RBV'
+    self->addProperty, 'ImageMode_RBV',     'ImageMode_RBV'
 
-    self->addProperty, 'TriggerMode',               'TriggerMode'
-    self->addProperty, 'TriggerMode_RBV',           'TriggerMode_RBV'
+    self->addProperty, 'TriggerMode',           'TriggerMode'
+    self->addProperty, 'TriggerMode_RBV',       'TriggerMode_RBV'
 
-    self->addProperty, 'AcquireTime',               'AcquireTime'
-    self->addProperty, 'AcquireTime_RBV',           'AcquireTime_RBV'
- 
-    self->addProperty, 'AcquirePeriod',             'AcquirePeriod'
-    self->addProperty, 'AcquirePeriod_RBV',         'AcquirePeriod_RBV'
-    
-    self->addProperty, 'TimeRemaining_RBV',         'TimeRemaining_RBV'
+    self->addProperty, 'AcquireTime',           'AcquireTime'
+    self->addProperty, 'AcquireTime_RBV',       'AcquireTime_RBV'
 
-    self->addProperty, 'NumExposures',              'NumExposures'
-    self->addProperty, 'NumExposures_RBV',          'NumExposures_RBV'
-    self->addProperty, 'NumExposuresCounter_RBV',   'NumExposuresCounter_RBV'
- 
-    self->addProperty, 'NumImages',                 'NumImages'
-    self->addProperty, 'NumImages_RBV',             'NumImages_RBV' 
-    self->addProperty, 'NumImagesCounter_RBV',      'NumImagesCounter_RBV'
+    self->addProperty, 'AcquirePeriod',         'AcquirePeriod'
+    self->addProperty, 'AcquirePeriod_RBV',     'AcquirePeriod_RBV'
 
-    self->addProperty, 'ImageCounter',               'ImageCounter'
-    self->addProperty, 'ImageCounter_RBV',           'ImageCounter_RBV'
-    self->addProperty, 'ImageRate_RBV',             'ImageRate_RBV'
+    self->addProperty, 'TimeRemaining_RBV',     'TimeRemaining_RBV'
 
-    self->addProperty, 'Acquire',           'Acquire'
-    self->addProperty, 'Acquire_RBV',       'Acquire_RBV'
+    self->addProperty, 'NumExposures',          'NumExposures'
+    self->addProperty, 'NumExposures_RBV',      'NumExposures_RBV'
+    self->addProperty, 'NumExposuresCounter_RBV', 'NumExposuresCounter_RBV'
 
-    self->addProperty, 'DetectorState_RBV',       'DetectorState_RBV'
- 
-    self->addProperty, 'ArrayCallbacks',           'ArrayCallbacks'
-    self->addProperty, 'ArrayCallbacks_RBV',       'ArrayCallbacks_RBV'
- 
-    self->addProperty, 'StatusMessage_RBV',       'StatusMessage_RBV', /string
-    self->addProperty, 'StringToServer_RBV',       'StringToServer_RBV', /string
-    self->addProperty, 'StringFromServer_RBV',       'StringFromServer_RBV', /string
- 
-    self->addProperty, 'ReadStatus',           'ReadStatus'
- 
+    self->addProperty, 'NumImages',             'NumImages'
+    self->addProperty, 'NumImages_RBV',         'NumImages_RBV'
+    self->addProperty, 'NumImagesCounter_RBV',  'NumImagesCounter_RBV'
+
+    self->addProperty, 'ArrayCounter',          'ArrayCounter'
+    self->addProperty, 'ArrayCounter_RBV',      'ArrayCounter_RBV'
+    self->addProperty, 'ArrayRate_RBV',         'ArrayRate_RBV'
+
+    self->addProperty, 'Acquire',               'Acquire'
+    self->addProperty, 'Acquire_RBV',           'Acquire_RBV'
+
+    self->addProperty, 'DetectorState_RBV',     'DetectorState_RBV'
+
+    self->addProperty, 'ArrayCallbacks',        'ArrayCallbacks'
+    self->addProperty, 'ArrayCallbacks_RBV',    'ArrayCallbacks_RBV'
+
+    self->addProperty, 'StatusMessage_RBV',     'StatusMessage_RBV', /string
+    self->addProperty, 'StringToServer_RBV',    'StringToServer_RBV', /string
+    self->addProperty, 'StringFromServer_RBV',  'StringFromServer_RBV', /string
+
+    self->addProperty, 'ReadStatus',            'ReadStatus'
+
     self->addProperty, 'ShutterMode',           'ShutterMode'
     self->addProperty, 'ShutterMode_RBV',       'ShutterMode_RBV'
 
-    self->addProperty, 'ShutterControl',           'ShutterControl'
-    self->addProperty, 'ShutterControl_RBV',       'ShutterControl_RBV'
+    self->addProperty, 'ShutterControl',        'ShutterControl'
+    self->addProperty, 'ShutterControl_RBV',    'ShutterControl_RBV'
 
-    self->addProperty, 'ShutterStatus_RBV',       'ShutterStatus_RBV'
- 
-    self->addProperty, 'ShutterStatusEPICS_RBV',       'ShutterStatusEPICS_RBV'
- 
-    self->addProperty, 'ShutterOpenDelay',           'ShutterOpenDelay'
-    self->addProperty, 'ShutterOpenDelay_RBV',       'ShutterOpenDelay_RBV'
+    self->addProperty, 'ShutterStatus_RBV',     'ShutterStatus_RBV'
 
-    self->addProperty, 'ShutterCloseDelay',           'ShutterCloseDelay'
-    self->addProperty, 'ShutterCloseDelay_RBV',       'ShutterCloseDelay_RBV'
+    self->addProperty, 'ShutterStatusEPICS_RBV','ShutterStatusEPICS_RBV'
+
+    self->addProperty, 'ShutterOpenDelay',      'ShutterOpenDelay'
+    self->addProperty, 'ShutterOpenDelay_RBV',  'ShutterOpenDelay_RBV'
+
+    self->addProperty, 'ShutterCloseDelay',     'ShutterCloseDelay'
+    self->addProperty, 'ShutterCloseDelay_RBV', 'ShutterCloseDelay_RBV'
 
     self->addProperty, 'Temperature',           'Temperature'
     self->addProperty, 'Temperature_RBV',       'Temperature_RBV'
-    
+
     catch, /cancel
 
     return, 1
