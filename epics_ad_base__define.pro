@@ -1,3 +1,68 @@
+pro epics_ad_base::wait, property, value, transition=transition, delay=delay
+;+
+; NAME:
+;       EPICS_AD_BASE::WAIT
+;
+; PURPOSE:
+;       This procedure waits for a detector property to have a specified value,
+;       to make a transition, or both.
+;
+; CATEGORY:
+;       IDL device class library.
+;
+; CALLING SEQUENCE:
+;       D->WAIT(PROPERTY, VALUE, TRANSITION=transition, DELAY=delay)
+;
+; INPUTS:
+;       Property:  The property to wait for.
+;
+; OPTIONAL INPUTS:
+;       Value:  The procedure will wait for the property to have this value.  If this input 
+;               is omitted then it will only wait for the transition, if /TRANSITION is specified.
+;
+; KEYWORD INPUTS:
+;       Transition: If this keyword is set then the procedure will wait for a transition
+;           (channel access monitor with new value) on the property.  If /TRANSITION and
+;           Value are both specified, then it first waits for the transition and then
+;           it waits for the value. 
+;           This is useful for ensuring, for example, when waiting for 'Acquire' to be 'Done' 
+;           that it has changed state, so it is not 'Done' because acquisition has not yet started. 
+;
+;       Delay:  The time to wait when polling for transitions and waiting for the value to be
+;           equal to the desired value.
+;
+; EXAMPLE:
+;       d = obj_new('EPICS_AD_BASE')
+;       d->wait, 'Acquire', 'Done', /transition
+;
+; MODIFICATION HISTORY:
+;       Written by:     Mark Rivers, July 20, 2010
+;-
+
+    prop = self->findProperty(property)
+    if (n_elements(delay) eq 0) then delay = 0.01
+    
+    ; If /TRANSITION was specified then wait for a transition on input. 
+    if (keyword_set(transition)) then begin
+        ; Read the property to clear the monitor flag
+        t = caGet(prop.pvName)
+        while(1) do begin
+            new = caCheckMonitor(prop.pvName)
+            if (new eq 1) then break
+            wait, delay
+        endwhile
+    endif
+
+    if (n_elements(value) ne 0) then begin
+        stringType = (size(value, /TNAME) eq 'STRING')
+        while (1) do begin
+            new = self->getProperty(property, string=stringType)
+            if (new eq value) then break
+            wait, delay
+        endwhile
+    endif
+end
+
 function epics_ad_base::init, prefix
 ;+
 ; NAME:
