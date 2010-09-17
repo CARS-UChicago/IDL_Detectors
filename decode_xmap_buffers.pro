@@ -53,6 +53,7 @@ function decode_xmap_buffers, bufferData
     nPixels = 0L
     clockPeriod = 320e-9
     firstTime = 1
+    maxPixelsPerBuffer = 0L
 
     for array=0, nArrays-1 do begin
         for module=0, nModules-1 do begin
@@ -75,19 +76,29 @@ function decode_xmap_buffers, bufferData
             bh.bufferErrors   = d[24]
             bh.userDefined    = d[32:63]
             offset = 256
-            for pixel=0, bh.numPixels-1 do begin
+            ; It is possible that each buffer has a different number
+            ; of pixels.  Use the value in the first buffer as the
+            ; maximum for all buffers
+            if (maxPixelsPerBuffer eq 0) then maxPixelsPerBuffer = long(bh.numPixels)
+            nPixels = bh.numPixels < maxPixelsPerBuffer
+            for pixel=0, nPixels-1 do begin
+                pn = array * maxPixelsPerBuffer + pixel
                 mph.tag0        = d[offset + 0]
                 mph.tag1        = d[offset + 1]
                 mph.headerSize  = d[offset + 2]
                 mph.mappingMode = d[offset + 3]
                 mph.pixelNumber = long(d, (offset+4)*2)
-                pn = mph.pixelNumber - firstPixel
+                ; The following assumes that the netCDF file is one single xMAP run
+                ; But that may not be true, so ignore the pixelNumber value
+                ;pn = mph.pixelNumber - firstPixel
+                ; Instead set it as above, which also handles case of different number of pixels in
+                ; each buffer
                 mph.blockSize   = long(d, (offset+6)*2)
                 if (mph.mappingMode eq 1) then begin
                     if (firstTime) then begin
                         firstTime = 0
                         nChannels = bh.channelSize[0]
-                        maxPixels = long(bh.numPixels) * nArrays
+                        maxPixels = maxPixelsPerBuffer * nArrays
                         data      = intarr(nChannels, nDetectors, maxPixels)
                         realTime     = fltarr(nDetectors, maxPixels)
                         liveTime     = fltarr(nDetectors, maxPixels)
