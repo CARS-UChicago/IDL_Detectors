@@ -67,7 +67,6 @@ function decode_xmap_buffers, bufferData
             bh.bufferNumber   = long(d, 5*2)
             bh.bufferID       = d[7]
             bh.numPixels      = d[8]
-            if (module eq 0) then nPixels += bh.numPixels
             bh.startingPixel  = long(d,9*2)
             if (array eq 0) then firstPixel = bh.startingPixel
             bh.moduleNumber   = d[11]
@@ -80,8 +79,9 @@ function decode_xmap_buffers, bufferData
             ; of pixels.  Use the value in the first buffer as the
             ; maximum for all buffers
             if (maxPixelsPerBuffer eq 0) then maxPixelsPerBuffer = long(bh.numPixels)
-            nPixels = bh.numPixels < maxPixelsPerBuffer
-            for pixel=0, nPixels-1 do begin
+            nPix = bh.numPixels < maxPixelsPerBuffer
+            if (module eq 0) then nPixels += nPix
+            for pixel=0, nPix-1 do begin
                 pn = array * maxPixelsPerBuffer + pixel
                 mph.tag0        = d[offset + 0]
                 mph.tag1        = d[offset + 1]
