@@ -166,7 +166,8 @@ princeton_header = {princeton_header, $
   lavgexp:              0L, $               ;  668  Number of Accumulations
   ReadoutTime:          0., $               ;  672  Experiment readout time
   TriggeredModeFlag:    0, $                ;  676  T/F Triggered Timing Option
-  Spare_2:              bytarr(10), $       ;  678  
+  XML_Offset:           0ULL, $             ;  678  XML Offset
+  Spare_2:              bytarr(2), $        ;  686
   sw_version:           "", $               ;  688  Version of SW creating this file
   type:                 0, $                ;  704  0=1000,1=new120,2=old120,3=130,
                                             ;       st121=4,st138=5,dc131(PentaMax)=6,

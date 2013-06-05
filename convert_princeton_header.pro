@@ -115,7 +115,8 @@ str.lnoscan                = long(header, 664)         ;  664  Number of scans (
 str.lavgexp                = long(header, 668)         ;  668  Number of Accumulations
 str.ReadoutTime            = float(header, 672)        ;  672  Experiment readout time
 str.TriggeredModeFlag      = fix(header, 676)          ;  676  T/F Triggered Timing Option
-str.Spare_2                = byte(header, 678, 10)     ;  678  
+str.XML_Offset             = ulong64(header, 678)      ;  678  XML Offset
+str.Spare_2                = byte(header, 686, 2)      ;  686  
 temp                       = byte(header, FILEVERMAX)  ;  688  Version of SW creating this file
 str.sw_version             = string(temp)              ;  688  Version of SW creating this file
 str.type                   = fix(header, 704)          ;  704  0=1000,1=new120,2=old120,3=130,
