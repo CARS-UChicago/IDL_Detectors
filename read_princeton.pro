@@ -82,6 +82,7 @@ pro read_princeton, file, $
 ;   Mark Rivers 2/22/00   Corrected byte order for data and calibration.
 ;   Mark Rivers 9/11/01   Added "exposure" keyword
 ;   Mark Rivers 9/12/01   Added "background_file" keyword
+;   Mark Rivers 5/28/13   Added support for V3.x SPE files with XML footer
 ;-
 
 openr, lun, /get, file, /block
@@ -93,47 +94,102 @@ readu, lun, header
 header = convert_princeton_header(header)
 
 ; Get the image size from the header
+; Note: the fields being accessed are valid in both 2.x SPE files written with WinSpec/WinView
+; and 3.x SPE files written with LightField
 nx = header.xdim
 ny = header.ydim
 nframes = header.NumFrames
 data_type = header.datatype
-case data_type of
-        0: data = fltarr(nx, ny, nframes)
-        1: data = lonarr(nx, ny, nframes)
-        2: data = intarr(nx, ny, nframes)
-        3: data = uintarr(nx, ny, nframes)
-        else: message, 'Unknown data type'
-endcase
-
-xcal = header.xcalibration
-ycal = header.ycalibration
-x_calibration = poly(findgen(nx), xcal.polynocoeff(0:xcal.polynoorder))
-y_calibration = poly(findgen(ny), ycal.polynocoeff(0:ycal.polynoorder))
-
 comments=header.comments
-comments=string(comments)
-date = header.date
-;hour = fix(header, 30)
-;byteorder, hour, /sswap, /swap_if_big_endian
-;minute = fix(header, 32)
-;byteorder, minute, /sswap, /swap_if_big_endian
-;second = fix(header, 38)
-;byteorder, second, /sswap, /swap_if_big_endian
-;date = date + ":" + string(hour, format='(i2.2)') $
-;            + ":" + string(minute, format='(i2.2)') $
-;            + ":" + string(second, format='(i2.2)')
-exposure = header.exp_sec
 if (header.BackGrndApplied) then background_file = header.background $
 else background_file = ""
+case data_type of
+    0: data = fltarr(nx, ny, nframes)
+    1: data = lonarr(nx, ny, nframes)
+    2: data = intarr(nx, ny, nframes)
+    3: data = uintarr(nx, ny, nframes)
+    8: data = ulonarr(nx, ny, nframes)
+    else: message, 'Unknown data type'
+endcase
 
 readu, lun, data
 data = reform(data)  ; Eliminate trailing dimensions if 1
 case data_type of
-        0: byteorder, data, /lswap, /swap_if_big_endian
-        1: byteorder, data, /lswap, /swap_if_big_endian
-        2: byteorder, data, /sswap, /swap_if_big_endian
-        3: byteorder, data, /sswap, /swap_if_big_endian
-        else: message, 'Unknown data type'
+  0: byteorder, data, /lswap, /swap_if_big_endian
+  1: byteorder, data, /lswap, /swap_if_big_endian
+  2: byteorder, data, /sswap, /swap_if_big_endian
+  3: byteorder, data, /sswap, /swap_if_big_endian
+  8: byteorder, data, /lswap, /swap_if_big_endian
+  else: message, 'Unknown data type'
 endcase
+
+if (header.file_header_ver lt 3.0) then begin
+    ; This is a Version 2.x SPE file
+    xcal = header.xcalibration
+    ycal = header.ycalibration
+    x_calibration = poly(findgen(nx), xcal.polynocoeff(0:xcal.polynoorder))
+    y_calibration = poly(findgen(ny), ycal.polynocoeff(0:ycal.polynoorder))
+    date = header.date
+    exposure = header.exp_sec
+endif else begin
+    ; This is a Version 3.x SPE file
+    x_calibration = dblarr(nx)
+    y_calibration = dblarr(ny)
+    point_lun, lun, header.XML_Offset
+    f = fstat(lun)
+    XMLSize = f.size - header.XML_Offset
+    xml = bytarr(XMLSize)
+    readu, lun, xml
+    xml = string(xml)
+    ; We now have a string containing the XML information
+    ; Parse it to extract the calibration information
+    DOM = obj_new('IDLffXMLDOMDocument', string=xml)
+    SPEFormat = DOM->GetDocumentElement()
+    Calibrations = (SPEFormat->GetElementsByTagName('Calibrations'))->Item(0)
+    if (not obj_valid(Calibrations)) then goto, no_calibration
+    WavelengthMapping = (Calibrations->GetElementsByTagName('WavelengthMapping'))->Item(0)
+    if (not obj_valid(WavelengthMapping)) then goto, no_calibration
+    Wavelength = (WavelengthMapping->GetElementsByTagName('Wavelength'))->Item(0)
+    if (not obj_valid(Wavelength)) then goto, no_calibration
+    WavelengthValues = Wavelength->GetFirstChild()
+    text = WavelengthValues->GetNodeValue();
+    reads, text, x_calibration
+    no_calibration:
+
+    ; Get the exposure time
+    DataHistories = (SPEFormat->GetElementsByTagName('DataHistories'))->Item(0)
+    if (not obj_valid(DataHistories)) then goto, no_exposure
+    DataHistory = (DataHistories->GetElementsByTagName('DataHistory'))->Item(0)
+    if (not obj_valid(DataHistory)) then goto, no_exposure
+    Origin = (DataHistory->GetElementsByTagName('Origin'))->Item(0)
+    if (not obj_valid(Origin)) then goto, no_exposure
+    Experiment = (Origin->GetElementsByTagName('Experiment'))->Item(0)
+    if (not obj_valid(Experiment)) then goto, no_exposure
+    Devices = (Experiment->GetElementsByTagName('Devices'))->Item(0)
+    if (not obj_valid(Devices)) then goto, no_exposure
+    Cameras = (Devices->GetElementsByTagName('Cameras'))->Item(0)
+    if (not obj_valid(Cameras)) then goto, no_exposure
+    Camera = (Cameras->GetElementsByTagName('Camera'))->Item(0)
+    if (not obj_valid(Camera)) then goto, no_exposure
+    ShutterTiming = (Camera->GetElementsByTagName('ShutterTiming'))->Item(0)
+    if (not obj_valid(ShutterTiming)) then goto, no_exposure
+    ExposureTime = (ShutterTiming->GetElementsByTagName('ExposureTime'))->Item(0)
+    if (not obj_valid(ExposureTime)) then goto, no_exposure
+    ExposureTimeValue = ExposureTime->GetFirstChild()
+    text = ExposureTimeValue->GetNodeValue();
+    exposure = float(text)/1000.  ; Time is in milliseconds
+    no_exposure:
+
+    ; Get the file date
+    GeneralInformation = (SPEFormat->GetElementsByTagName('GeneralInformation'))->Item(0)
+    if (not obj_valid(GeneralInformation)) then goto, no_date
+    FileInformation = (GeneralInformation->GetElementsByTagName('FileInformation'))->Item(0)
+    if (not obj_valid(FileInformation)) then goto, no_date
+    date = FileInformation->GetAttribute('created')
+    no_date:
+
+    
+endelse
+
 free_lun, lun
 end
