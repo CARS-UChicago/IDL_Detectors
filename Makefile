@@ -1,11 +1,10 @@
-# Makefile for GridrecIDL for Linux
+# Makefile for mar345_IDL for Linux
 
 SHELL = /bin/sh
 CFLAGS = -O -fPIC -Wall
 INCLUDES=-I../
 MAKE = make
 
-# For FFTW
 OBJ = mar3xx_pck.o mar345_IDL.o
 SRC = mar3xx_pck.c mar345_IDL.c
 
