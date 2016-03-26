@@ -85,6 +85,8 @@ pro read_princeton, file, $
 ;   Mark Rivers 5/28/13   Added support for V3.x SPE files with XML footer
 ;-
 
+on_ioerror, error
+
 openr, lun, /get, file, /block
 
 header = bytarr(4100)
@@ -192,4 +194,10 @@ endif else begin
 endelse
 
 free_lun, lun
+return
+
+error:
+message, 'read_princeton: error reading file: ' + file
+if (n_elements(lun) ne 0) then free_lun, lun
+
 end
