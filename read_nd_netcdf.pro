@@ -1,4 +1,4 @@
-function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimInfo
+function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimInfo, noData=noData
 
 ;+
 ; NAME:
@@ -11,7 +11,7 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
 ;   Detectors.
 ;
 ; CALLING SEQUENCE:
-;   Data = READ_ND_NETCDF(File, Range=Range, Attributes=Attributes, DimInfo=DimInfo)
+;   Data = READ_ND_NETCDF(File, Range=Range, Attributes=Attributes, DimInfo=DimInfo, NoData=NoData)
 ;
 ; INPUTS:
 ;   File:
@@ -28,10 +28,13 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
 ;         range=[[-1,-1], [0,100], [2,5]]
 ;       means read the full range of the data in the first (fastest) dimension, elements 0 to 100 for
 ;       the second dimension and elements 2 to 5 for the last (slowest) dimension.
+;  NoData:
+;       Set this keyword to 1 to not read the data itself, but only the attributes and dimension info.
 ;
 ; OUTPUTS:
 ;       This function returns the N-Dimensional array of data.
 ;       The dimensions are [dim0, dim1, ..., NumArrays]
+;       If the NoData keyword is set then the function just returns 0.
 ;
 ; KEYWORD OUTPUTS:
 ;   Attributes: An array of structures of the following type containing the name, description and pointer to value
@@ -101,6 +104,7 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
 ;   April 23, 2009  Mark Rivers.  Added support for new file format with NDArray attributes.  Removed uniqueId and timeStamp
 ;                   keywords, these are now handled under general attributes.  colorMode and bayerPattern no longer
 ;                   returned in arrayInfo structure, they are also general attributes of each array.
+;   March 26, 2016  Mark Rivers.  Added NoData keyword.
 ;-
 
     if (n_elements(file) eq 0) then file=dialog_pickfile(/must_exist)
@@ -134,6 +138,8 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
         ncdf_attget, file_id, /global, 'NDNetCDFFileVersion', fileVersion
     endif
 
+    ; Array data type (NDDataType_t enumeration)
+    ncdf_attget, file_id, /global, 'dataType', dataType
     ; Array dimension information
     ncdf_attget, file_id, /global, 'numArrayDims', ndims
     dimInfo = replicate(dimInfo, ndims)
@@ -192,9 +198,12 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
         numAttributes = numAttributes + 1
     endfor
 
+    ; Set data to 0 in case NoData keyword is set
+    data = 0
+
     ; If we are to read the entire array things are simpler
     if (n_elements(range) eq 0) then begin
-        ncdf_varget, file_id, array_data_id, data
+        if (not keyword_set(nodata)) then ncdf_varget, file_id, array_data_id, data
         for i=0, numAttributes-1 do begin
             ncdf_varget, file_id, attributeIds[i], temp
             ; If the data type is CHAR then convert to string
@@ -222,9 +231,11 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
             if (max_range[dim] lt 0) then max_range[dim] = n-1
             max_range[dim] = (max_range[dim] > min_range[dim]) < (n-1)
         endfor
-        ncdf_varget, file_id, array_data_id, data, $
-            offset = min_range, $
-            count = max_range - min_range + 1
+        if (not keyword_set(nodata)) then begin
+            ncdf_varget, file_id, array_data_id, data, $
+                offset = min_range, $
+                count = max_range - min_range + 1
+        endif
         for i=0, numAttributes-1 do begin
             var_info = ncdf_varinq(file_id, attributeIds[i])
             ; Most variables will be 1-D.  But strings will be 2-D
@@ -243,6 +254,10 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
             attributes[i].pValue = ptr_new(temp, /no_copy)
         endfor
     endelse
+    
+    ; If the datatype is unsigned convert to signed
+    if (dataType eq 3) then data = uint(data)
+    if (dataType eq 5) then data = ulong(data)
 
     ; Close the netCDF file
     ncdf_close, file_id
