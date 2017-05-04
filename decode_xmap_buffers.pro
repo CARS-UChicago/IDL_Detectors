@@ -17,7 +17,7 @@ function decode_xmap_buffers, bufferData
 ;   BufferData:
 ;       An array containing the buffer data.  This array will typically have been read with the READ_ND_NETCDF
 ;       function, but it could also have been created in other ways.  This array is of type INT, i.e. 16-bit
-;       data.  Its dimensions are [NumArrays, NumModules, BufferSize].  NumArrays is the number of arrays
+;       data.  Its dimensions are [BufferSize, NumArrays, NumModules].  NumArrays is the number of arrays
 ;       that were collected.  NumModules is the number of xMAP modules in the system.  BufferSize is the size
 ;       of each buffer that was read from the xMAP.
 ;
