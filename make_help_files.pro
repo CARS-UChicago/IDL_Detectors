@@ -13,6 +13,7 @@ mk_html_help, ['read_bas2000.pro', $
                'read_nd_netcdf.pro', $
                'read_xmap_netcdf.pro', $
                'decode_xmap_buffers.pro', $
+               'decode_falcon_buffers.pro', $
                'read_xmap_2d.pro', $
                'winx32_ccd__define.pro', $
                'winx32_exp_cmd__define.pro', $
