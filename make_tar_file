@@ -1,2 +1,2 @@
 rm -f *.BAK
-tar cvf /home/epics/public_html/pub/idl_detector.tar * --exclude CVS
+tar cvf /home/epics/public_html/pub/idl_detector.tar *
