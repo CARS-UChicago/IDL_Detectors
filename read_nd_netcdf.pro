@@ -261,8 +261,11 @@ function read_nd_netcdf, file, range=range, attributes=attributes, dimInfo=dimIn
     
     ; If the datatype is int64 or uint64 then it will be float64 in the file.
     ; Cast to the correct datatype
-    if (datatype eq 6) then data = long64(data, 0, size(data, /n_elements))
-    if (datatype eq 7) then data = ulong64(data, 0, size(data, /n_elements))
+    ; Only do this test if fileVersion 3.1 and higher, before that datatype 6 and 7 are float32 and float64.
+    if (fileVersion gt 3.0) then begin
+      if (datatype eq 6) then data = long64(data, 0, size(data, /n_elements))
+      if (datatype eq 7) then data = ulong64(data, 0, size(data, /n_elements))
+    endif
 
     ; Close the netCDF file
     ncdf_close, file_id
